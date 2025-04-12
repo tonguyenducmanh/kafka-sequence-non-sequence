@@ -33,6 +33,11 @@ namespace KafkaPublish.API.Controllers
 
         #region Methods
 
+        /// <summary>
+        /// test việc publish message lên kafka
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("Publish")]
         public async Task<IActionResult> Publish([FromBody] KafkaMessage message)

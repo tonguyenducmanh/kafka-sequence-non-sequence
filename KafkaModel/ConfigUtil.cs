@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace KafkaModel
 {
+    /// <summary>
+    /// cấu hình chung lưu global singleton
+    /// </summary>
     public class ConfigUtil
     {
         static CenterConfig _centerConfig;

@@ -4,29 +4,62 @@ using KafkaModel;
 namespace KafkaCore
 {
     /// <summary>
-    /// KafkaConsumer là lớp dùng để tiêu thụ message từ kafka
-    /// lớp này xử lý không tuần tự
+    /// xử lý queue kafka không tuần tự dù queue trả về có theo routingkey
     /// </summary>
     public class KafkaNonSequenceConsumer
     {
         #region Declare
 
+        /// <summary>
+        /// consumer sẽ dùng để đọc queue, tránh khởi tạo nhiều lần
+        /// </summary>
         IConsumer<string, string> _consumer;
 
-        private int MaxThread = 1; // số luồng tối đa
+        /// <summary>
+        /// số thread tối đa được phép chạy
+        /// </summary>
+        private int MaxThread = 1;
 
+        /// <summary>
+        /// đối tượng dùng để lock khi add task
+        /// </summary>
         private object _lockTask = new object();
 
+        /// <summary>
+        /// danh sách các task đang chạy
+        /// </summary>
         private List<Task> _tasks = new List<Task>();
 
-        private int _ThreadCount = 0; // số luồng đang chạy
+        /// <summary>
+        /// số luồng đang chạy
+        /// </summary>
+        private int _ThreadCount = 0;
+
+        /// <summary>
+        /// config của consumer
+        /// </summary>
+        private KafkaSubcribleConfig _config;
         #endregion
 
 
         #region Constructor
+
+        /// <summary>
+        /// Hàm khởi tạo
+        /// </summary>
+        /// <param name="config"></param>
         public KafkaNonSequenceConsumer(KafkaSubcribleConfig config)
         {
             InitConsumer(config);
+        }
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// xử lý các message trong queue nhận được từ kafka
+        /// </summary>
+        public void ProcessDequeueKafka()
+        {
             CancellationTokenSource cts = new CancellationTokenSource();
 
             Console.CancelKeyPress += (_, e) =>
@@ -40,7 +73,7 @@ namespace KafkaCore
                 while (!cts.Token.IsCancellationRequested)
                 {
                     var cr = _consumer.Consume(cts.Token);
-                    HandleMessage(config, cr);
+                    HandleMessage(_config, cr);
                 }
             }
             catch (OperationCanceledException)
@@ -53,6 +86,11 @@ namespace KafkaCore
             }
         }
 
+
+        /// <summary>
+        /// xử lý 1 message nhận được từ queue kafka
+        /// </summary>
+        /// <param name="cr"></param>
         private void HandleMessage(KafkaSubcribleConfig config, ConsumeResult<string, string> cr)
         {
 
@@ -60,6 +98,7 @@ namespace KafkaCore
             {
                 string taskName = $"Task {_ThreadCount + 1}";
 
+                // mỗi message nhận được sẽ tạo ra 1 task để xử lý
                 Task processTask = new Task(() =>
                 {
                     try
@@ -98,12 +137,22 @@ namespace KafkaCore
             }
         }
 
+        /// <summary>
+        /// xử lý nghiệp vụ trong 1 task
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="taskName"></param>
+
         private void TaskHandleMessage(KafkaSubcribleConfig config, ConsumeResult<string, string> cr)
         {
             LogQueueUtil.ConsoleLog(config, cr);
             Task.Delay(5000).Wait(); // giả lập thời gian xử lý message
         }
 
+        /// <summary>
+        /// khởi tạo consumer
+        /// </summary>
+        /// <param name="config"></param>
         private void InitConsumer(KafkaSubcribleConfig config)
         {
             MaxThread = config.MaxThread;
@@ -114,6 +163,7 @@ namespace KafkaCore
             };
             _consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
             _consumer.Subscribe(config.Topic);
+            _config = config;
         }
 
         #endregion
