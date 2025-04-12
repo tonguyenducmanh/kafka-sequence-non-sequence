@@ -2,7 +2,15 @@
 
 sẽ có 1 số trường hợp user mong muốn các queue của mình được sequence vào trong 1 worker cụ thể để xử lý, khi đó chỉ cần sử dụng routing key là được
 
-tuy nhiên 1 vài trường hợp khi triển khai mong muống 1 worker sẽ có nhiều thread xử lý, khi đó khả năng nhiều thread cùng insert, update dữ liệu sẽ dẫn tới không đảm bảo đúng thứ tự sequence
+vd hình dưới là 1 topic kafka có 100 partition
+
+![partition](<imgs/partition lớn.png>)
+
+các parition này sẽ được chia đều cho 2 worker đang handle
+
+![worker replica](<imgs/routing key theo worker.png>)
+
+tuy nhiên 1 vài trường hợp khi triển khai mong muốn 1 worker sẽ có nhiều thread xử lý, khi đó khả năng nhiều thread cùng insert, update dữ liệu sẽ dẫn tới không đảm bảo đúng thứ tự sequence
 
 test theo các bước dưới đây để thấy được sự khác biệt
 
