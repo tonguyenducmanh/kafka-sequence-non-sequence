@@ -5,7 +5,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 ConfigUtil.InitGlobalConfig(builder);
 
-builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<ProcessKafkaSubWorker>();
 
 var host = builder.Build();
 host.Run();

@@ -3,11 +3,14 @@ using KafkaModel;
 
 namespace KafkaConsumerWorker
 {
-    public class Worker : BackgroundService
+    /// <summary>
+    /// process xử lý các message từ kafka
+    /// </summary>
+    public class ProcessKafkaSubWorker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<ProcessKafkaSubWorker> _logger;
         
-        public Worker(ILogger<Worker> logger)
+        public ProcessKafkaSubWorker(ILogger<ProcessKafkaSubWorker> logger)
         {
             _logger = logger;
         }
