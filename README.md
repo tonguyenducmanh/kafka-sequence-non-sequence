@@ -4,7 +4,7 @@ sẽ có 1 số trường hợp user mong muốn các queue của mình được
 
 vd hình dưới là 1 topic kafka có 100 partition ( phải tạo bằng tay thì mới được 100, nếu start project để tự tạo topic thì nó sẽ chỉ có 1 partitions)
 
-![partition](<imgs/partition lớn.png>)
+![alt text](<imgs/2 partition chia đều cho 2 worker.png>)
 
 các parition này sẽ được chia đều cho 2 worker đang handle
 
