@@ -26,6 +26,11 @@ namespace KafkaModel
         /// </summary>
         public bool UsingSequence { get; set; } =  false;
 
+        /// <summary>
+        /// thời gian delay giữa các task
+        /// </summary>
+        public int TaskDelay { get; set; } = 1;
+
     }
 
     /// <summary>

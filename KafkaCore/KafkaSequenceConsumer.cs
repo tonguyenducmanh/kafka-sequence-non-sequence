@@ -246,7 +246,8 @@ namespace KafkaCore
                     LogQueueUtil.ConsoleLog(_config, cr);
 
                     // giả lập thời gian xử lý message
-                    Task.Delay(5000).Wait();
+                    int delay = ConfigUtil.CenterConfig.TaskDelay * 1000;
+                    Task.Delay(delay).Wait(); // giả lập thời gian xử lý message
                     if (i > _maxLoopBreak)
                     {
                         Console.WriteLine($"Vượt quá số lần lặp tối đa {_maxLoopBreak}");

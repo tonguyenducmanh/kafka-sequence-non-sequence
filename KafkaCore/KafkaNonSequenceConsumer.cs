@@ -146,7 +146,8 @@ namespace KafkaCore
         private void TaskHandleMessage(KafkaSubcribleConfig config, ConsumeResult<string, string> cr)
         {
             LogQueueUtil.ConsoleLog(config, cr);
-            Task.Delay(5000).Wait(); // giả lập thời gian xử lý message
+            int delay = ConfigUtil.CenterConfig.TaskDelay * 1000;
+            Task.Delay(delay).Wait(); // giả lập thời gian xử lý message
         }
 
         /// <summary>
