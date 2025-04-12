@@ -1,5 +1,7 @@
 ﻿using Confluent.Kafka;
 using KafkaModel;
+using System.Collections.Concurrent;
+using System.Diagnostics.Tracing;
 
 namespace KafkaCore
 {
@@ -10,8 +12,8 @@ namespace KafkaCore
     public class KafkaSequenceConsumer
     {
         #region Declare
-        
-        IConsumer<Ignore, string> _consumer;
+
+        IConsumer<string, string> _consumer;
 
         private int MaxThread = 1; // số luồng tối đa
 
@@ -20,6 +22,21 @@ namespace KafkaCore
         private List<Task> _tasks = new List<Task>();
 
         private int _ThreadCount = 0; // số luồng đang chạy
+
+        // số lần lặp tối đa tránh stack overflow
+        private int _maxLoopBreak = 1000;
+
+        private KafkaSubcribleConfig _config;
+        /// <summary>
+        /// danh sách các message cần xử lý theo key sequence
+        /// </summary>
+        private ConcurrentDictionary<string, ConcurrentQueue<ConsumeResult<string, string>>> _dicMessage { get; set; } = new ConcurrentDictionary<string, ConcurrentQueue<ConsumeResult<string, string>>>();
+
+        /// <summary>
+        /// danh sách các task tương ứng theo key sequence
+        /// </summary>
+        private ConcurrentDictionary<string, Task> _dicTask { get; set; } = new ConcurrentDictionary<string, Task>();
+
         #endregion
 
 
@@ -40,7 +57,7 @@ namespace KafkaCore
                 while (!cts.Token.IsCancellationRequested)
                 {
                     var cr = _consumer.Consume(cts.Token);
-                    HandleMessage(config, cr);
+                    HandleMessage(cr);
                 }
             }
             catch (OperationCanceledException)
@@ -53,11 +70,61 @@ namespace KafkaCore
             }
         }
 
-        private void HandleMessage(KafkaSubcribleConfig config, ConsumeResult<Ignore, string> cr)
+        private void HandleMessage(ConsumeResult<string, string> cr)
         {
-
-            if(_tasks.Count < MaxThread)
+            string key = GetKeyForDictionary(cr);
+            AddSequenceMessage(key, cr);
+            if(_dicTask.Count == MaxThread)
             {
+                // chờ 1 task complete rồi mới thực hiện tiếp
+                int idx = Task.WaitAny(_dicTask.Values.ToArray());
+            }
+        }
+
+        private bool AddSequenceMessage(string key, ConsumeResult<string, string> cr)
+        {
+            lock (_lockTask)
+            {
+                if (_dicMessage.ContainsKey(key))
+                {
+                    _dicMessage[key].Enqueue(cr);
+                }
+                else
+                {
+                    ConcurrentQueue<ConsumeResult<string, string>> queue = new ConcurrentQueue<ConsumeResult<string, string>>();
+                    queue.Enqueue(cr);
+                    _dicMessage.TryAdd(key, queue);
+                    AddTask(key);
+                }
+            }
+            return true;
+        }
+
+
+        private bool RemoveSequenceMessage(string key)
+        {
+            lock (_lockTask)
+            {
+                if (_dicMessage.ContainsKey(key))
+                {
+                    _dicMessage.TryRemove(key, out _);
+                    _dicTask.TryRemove(key, out _);
+                    _ThreadCount--;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void AddTask(string key)
+        {
+            if (_dicTask.ContainsKey(key))
+            {
+                Console.WriteLine($"Vẫn còn task đang chạy theo key {key}");
+            }
+            else
+            {
+                _ThreadCount++;
                 string taskName = $"Task {_ThreadCount + 1}";
 
                 Task processTask = new Task(() =>
@@ -65,7 +132,7 @@ namespace KafkaCore
                     try
                     {
                         Thread.CurrentThread.Name = taskName;
-                        TaskHandleMessage(config, cr);
+                        TaskHandleMessage(key, taskName);
                     }
                     catch (Exception ex)
                     {
@@ -73,35 +140,57 @@ namespace KafkaCore
                     }
                 });
 
-                lock(_lockTask)
+                processTask.ContinueWith(t =>
                 {
-                    _tasks.Add(processTask);
-                    _ThreadCount++;
-                    if(_ThreadCount == MaxThread)
+                    try
                     {
-                        _ThreadCount = 0;
+                        // chạy xong là dọn luôn task khỏi dictionary
+                        RemoveSequenceMessage(key);
                     }
-                }
+                    catch (Exception)
+                    {
+
+                        throw;
+                    }
+                });
+
+                _dicTask.TryAdd(key, processTask);
 
                 processTask.Start();
-
-                // nếu số luồng đang chạy bằng số luồng tối đa thì chờ cho 1 luồng hoàn thành
-                if (_tasks.Count == MaxThread)
-                {
-                    // task chạy xong thì xóa khỏi danh sách task đang chạy
-                    int idx = Task.WaitAny(_tasks.ToArray());
-                    lock(_lockTask)
-                    {
-                        _tasks.RemoveAt(idx);
-                    }
-                }
             }
         }
 
-        private void TaskHandleMessage(KafkaSubcribleConfig config, ConsumeResult<Ignore, string> cr)
+        private string GetKeyForDictionary(ConsumeResult<string, string> cr)
         {
-            Console.WriteLine($"{config.MachineName} {Thread.CurrentThread.Name} Nhận message: {cr.Message.Value} từ topic {cr.Topic}, partition {cr.Partition}, offset {cr.Offset}");
-            Task.Delay(5000).Wait(); // giả lập thời gian xử lý message
+            // lấy key từ message
+            return cr.Message.Key.ToString() ?? string.Empty;
+        }
+
+        private void TaskHandleMessage(string key, string taskName)
+        {
+            if (!_dicMessage.ContainsKey(key))
+            {
+                Console.WriteLine($"Không tìm thấy message theo key {key}");
+                return;
+            }
+            else
+            {
+                int i = 0;
+                ConcurrentQueue<ConsumeResult<string, string>>? queueData = _dicMessage[key];
+                while (queueData.Count > 0)
+                {
+                    i++;
+                    ConsumeResult<string, string>? cr;
+                    queueData.TryDequeue(out cr);
+                    LogQueueUtil.ConsoleLog(_config, cr);
+                    Task.Delay(5000).Wait(); // giả lập thời gian xử lý message
+                    if (i > _maxLoopBreak)
+                    {
+                        Console.WriteLine($"Vượt quá số lần lặp tối đa {_maxLoopBreak}");
+                        break;
+                    }
+                }
+            }
         }
 
         private void InitConsumer(KafkaSubcribleConfig config)
@@ -112,8 +201,9 @@ namespace KafkaCore
                 BootstrapServers = config.BootstrapServers,
                 GroupId = config.GroupId
             };
-            _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
+            _consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
             _consumer.Subscribe(config.Topic);
+            _config = config;
         }
 
         #endregion

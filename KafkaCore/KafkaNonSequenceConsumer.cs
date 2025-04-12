@@ -11,7 +11,7 @@ namespace KafkaCore
     {
         #region Declare
 
-        IConsumer<Ignore, string> _consumer;
+        IConsumer<string, string> _consumer;
 
         private int MaxThread = 1; // số luồng tối đa
 
@@ -53,7 +53,7 @@ namespace KafkaCore
             }
         }
 
-        private void HandleMessage(KafkaSubcribleConfig config, ConsumeResult<Ignore, string> cr)
+        private void HandleMessage(KafkaSubcribleConfig config, ConsumeResult<string, string> cr)
         {
 
             if (_tasks.Count < MaxThread)
@@ -98,9 +98,9 @@ namespace KafkaCore
             }
         }
 
-        private void TaskHandleMessage(KafkaSubcribleConfig config, ConsumeResult<Ignore, string> cr)
+        private void TaskHandleMessage(KafkaSubcribleConfig config, ConsumeResult<string, string> cr)
         {
-            Console.WriteLine($"{config.MachineName} {Thread.CurrentThread.Name} Nhận message: {cr.Message.Value} từ topic {cr.Topic}, partition {cr.Partition}, offset {cr.Offset}");
+            LogQueueUtil.ConsoleLog(config, cr);
             Task.Delay(5000).Wait(); // giả lập thời gian xử lý message
         }
 
@@ -112,7 +112,7 @@ namespace KafkaCore
                 BootstrapServers = config.BootstrapServers,
                 GroupId = config.GroupId
             };
-            _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
+            _consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
             _consumer.Subscribe(config.Topic);
         }
 
