@@ -14,6 +14,8 @@ namespace KafkaModel
         public KafkaConfig KafkaPublishConfig { get; set; } = new KafkaConfig();
         public KafkaSubcribleConfig KafkaSubcribleConfig { get; set; } = new KafkaSubcribleConfig();
 
+        public bool UsingSequence { get; set; } =  false; // sử dụng sequence hay không
+
     }
 
     /// <summary>

@@ -1,5 +1,5 @@
+using KafkaConsumerWorker;
 using KafkaModel;
-using KafkaSequenceWorker;
 
 var builder = Host.CreateApplicationBuilder(args);
 
