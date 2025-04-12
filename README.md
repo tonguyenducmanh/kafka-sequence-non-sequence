@@ -2,7 +2,7 @@
 
 sẽ có 1 số trường hợp user mong muốn các queue của mình được sequence vào trong 1 worker cụ thể để xử lý, khi đó chỉ cần sử dụng routing key là được
 
-vd hình dưới là 1 topic kafka có 100 partition
+vd hình dưới là 1 topic kafka có 100 partition ( phải tạo bằng tay thì mới được 100, nếu start project để tự tạo topic thì nó sẽ chỉ có 1 partitions)
 
 ![partition](<imgs/partition lớn.png>)
 
