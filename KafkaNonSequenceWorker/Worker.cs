@@ -7,6 +7,8 @@ namespace KafkaNonSequenceWorker
     {
         private readonly ILogger<Worker> _logger;
 
+        private readonly string MachineName = nameof(KafkaNonSequenceWorker);
+
         public Worker(ILogger<Worker> logger)
         {
             _logger = logger;
@@ -14,10 +16,12 @@ namespace KafkaNonSequenceWorker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             _ = Task.Run(() =>
             {
                 KafkaSubcribleConfig kafkaConfig = ConfigUtil.CenterConfig.KafkaSubcribleConfig;
-                KafkaConsumer kafkaConsumer = new KafkaConsumer(kafkaConfig);
+                kafkaConfig.MachineName = MachineName;
+                KafkaNonSequenceConsumer kafkaConsumer = new KafkaNonSequenceConsumer(kafkaConfig);
             });
         }
     }

@@ -1,18 +1,13 @@
 ﻿using Confluent.Kafka;
 using KafkaModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Confluent.Kafka.ConfigPropertyNames;
 
 namespace KafkaCore
 {
     /// <summary>
     /// KafkaConsumer là lớp dùng để tiêu thụ message từ kafka
+    /// lớp này xử lý tuần tự
     /// </summary>
-    public class KafkaConsumer
+    public class KafkaSequenceConsumer
     {
         #region Declare
         
@@ -23,7 +18,7 @@ namespace KafkaCore
 
 
         #region Constructor
-        public KafkaConsumer(KafkaSubcribleConfig config) {
+        public KafkaSequenceConsumer(KafkaSubcribleConfig config) {
             ConsumerConfig consumerConfig = new ConsumerConfig
             {
                 BootstrapServers = config.BootstrapServers,
@@ -44,7 +39,7 @@ namespace KafkaCore
                 while (!cts.Token.IsCancellationRequested)
                 {
                     var cr = _consumer.Consume(cts.Token);
-                    Console.WriteLine($"Nhận message: {cr.Message.Value} từ topic {cr.Topic}, partition {cr.Partition}, offset {cr.Offset}");
+                    Console.WriteLine($"{config.MachineName} Nhận message: {cr.Message.Value} từ topic {cr.Topic}, partition {cr.Partition}, offset {cr.Offset}");
                 }
             }
             catch (OperationCanceledException)

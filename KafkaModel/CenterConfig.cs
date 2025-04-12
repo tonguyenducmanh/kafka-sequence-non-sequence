@@ -34,5 +34,9 @@ namespace KafkaModel
         public string BootstrapServers { get; set; }
         public List<string> Topic { get; set; }
         public string GroupId { get; set; }
+
+        public string MachineName { get; set; } // tên máy
+
+        public int MaxThread { get; set; }
     }
 }
