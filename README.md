@@ -12,10 +12,14 @@ bước 3: Mở project bằng visual studio, chạy debug cả KafkaConsumerWor
 
 với api sampe-pubish, 2 lời bài hát sau được publish liên lục và kết quả console log ở bên dưới
 
+mỗi task được hiểu là 1 thread trong pc xử lý
+
+(sửa config chạy tuần tự ở trong appsettings.json cờ UsingSequence)
+
 kết quả chạy không tuần tự
 
-![nonsequence](<imgs/non sequence.png>)
+![alt text](<imgs/chạy không tuần tự.png>)
 
 kết quả chạy tuần tự
 
-![sequence](imgs/sequence.png)
+![alt text](<imgs/chạy tuần tự.png>)
