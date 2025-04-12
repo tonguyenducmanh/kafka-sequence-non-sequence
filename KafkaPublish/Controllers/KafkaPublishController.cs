@@ -27,12 +27,6 @@ namespace KafkaPublish.API.Controllers
 
         #region API
 
-
-
-        #endregion
-
-        #region Methods
-
         /// <summary>
         /// test việc publish message lên kafka
         /// </summary>
