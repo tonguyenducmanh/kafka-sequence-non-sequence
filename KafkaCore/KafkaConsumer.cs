@@ -27,8 +27,7 @@ namespace KafkaCore
             ConsumerConfig consumerConfig = new ConsumerConfig
             {
                 BootstrapServers = config.BootstrapServers,
-                GroupId = config.GroupId,
-                Debug = "all"
+                GroupId = config.GroupId
             };
             _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
             _consumer.Subscribe(config.Topic);
