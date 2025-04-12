@@ -41,7 +41,7 @@ namespace KafkaPublish.API.Controllers
             {
                 KafkaPublisher publisher = new KafkaPublisher();
 
-                KafkaConfig config = ConfigUtil.CenterConfig.KafkaConfig;
+                KafkaConfig config = ConfigUtil.CenterConfig.KafkaPublishConfig;
                 await publisher.PublishAsync(config, message.Message, message.Sequency);
                 return Ok("Publish success");
             }

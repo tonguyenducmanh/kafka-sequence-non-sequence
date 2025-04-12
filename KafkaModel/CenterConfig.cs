@@ -11,7 +11,9 @@ namespace KafkaModel
     /// </summary>
     public class CenterConfig
     {
-        public KafkaConfig KafkaConfig { get; set; } = new KafkaConfig();
+        public KafkaConfig KafkaPublishConfig { get; set; } = new KafkaConfig();
+        public KafkaSubcribleConfig KafkaSubcribleConfig { get; set; } = new KafkaSubcribleConfig();
+
     }
 
     /// <summary>
@@ -21,6 +23,16 @@ namespace KafkaModel
     {
         public string BootstrapServers { get; set; }
         public string Topic { get; set; }
+        public string GroupId { get; set; }
+    }
+
+    /// <summary>
+    /// cấu hình kafka
+    /// </summary>
+    public class KafkaSubcribleConfig
+    {
+        public string BootstrapServers { get; set; }
+        public List<string> Topic { get; set; }
         public string GroupId { get; set; }
     }
 }
