@@ -6,7 +6,7 @@ namespace KafkaPublish.Controllers
     /// <summary>
     /// api kiểm tra xem có chạy được service không
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/test")]
     [ApiController]
     public class TestController : ControllerBase
     {
