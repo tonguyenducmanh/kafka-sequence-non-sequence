@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaPublish", "KafkaPublish\KafkaPublish.csproj", "{397B4133-CB6C-4934-A56C-8DC7773643B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaPublish.API", "KafkaPublish\KafkaPublish.API.csproj", "{397B4133-CB6C-4934-A56C-8DC7773643B6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaNonSequenceWorker", "KafkaNonSequenceWorker\KafkaNonSequenceWorker.csproj", "{02FED53E-EDEA-4145-A5BC-332449956CEB}"
 EndProject
