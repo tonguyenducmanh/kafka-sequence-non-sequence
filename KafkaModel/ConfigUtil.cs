@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
 namespace KafkaModel
 {
@@ -23,12 +20,32 @@ namespace KafkaModel
         }
 
         /// <summary>
+        /// khởi tạo config toàn cục singleton
+        /// </summary>
+        /// <param name="builder"></param>
+        public static void InitGlobalConfig(IHostApplicationBuilder builder)
+        {
+            IHostEnvironment hostEnvironment = builder.Environment;
+
+            string configPath = GetCommonConfigFilePath(hostEnvironment);
+
+            builder.Configuration.AddJsonFile(configPath, optional: false, reloadOnChange: true);
+
+            var centerConfig = new CenterConfig();
+            builder.Configuration.Bind(centerConfig);
+
+            InitConfig(centerConfig);
+        }
+
+        /// <summary>
         /// khởi tạo config
         /// </summary>
         /// <param name="centerConfig"></param>
-        public static void InitConfig(CenterConfig centerConfig)
+        private static void InitConfig(CenterConfig centerConfig)
         {
             _centerConfig = centerConfig;
+            string message = "Config loaded: " + JsonSerializer.Serialize(_centerConfig);
+            Console.WriteLine(message);
         }
 
         /// <summary>
@@ -36,7 +53,7 @@ namespace KafkaModel
         /// </summary>
         /// <param name="env"></param>
         /// <returns></returns>
-        public static string GetCommonConfigFilePath(IHostEnvironment env)
+        private static string GetCommonConfigFilePath(IHostEnvironment env)
         {
             string folder = env.ContentRootPath,
                 filePath;

@@ -6,14 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 IHostEnvironment hostEnvironment = builder.Environment;
 
-string configPath = ConfigUtil.GetCommonConfigFilePath(hostEnvironment);
-
-builder.Configuration.AddJsonFile(configPath, optional: false, reloadOnChange: true);
-
-var centerConfig = new CenterConfig();
-builder.Configuration.Bind(centerConfig);
-
-ConfigUtil.InitConfig(centerConfig);
+ConfigUtil.InitGlobalConfig(builder);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
